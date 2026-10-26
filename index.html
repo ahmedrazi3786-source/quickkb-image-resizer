@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2563eb">
+<meta name="description" content="Resize images to 20KB, 50KB, 100KB, 200KB or a custom size for online forms and applications. Free, private and easy to use.">
+<title>QuickKB Image Resizer — Free Online Image Compressor</title>
+<style>
+:root{color-scheme:light;--blue:#2563eb;--ink:#172033;--muted:#64748b;--line:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;background:#f5f8ff;color:var(--ink);font:16px/1.5 system-ui,-apple-system,sans-serif}
+header{background:white;border-bottom:1px solid var(--line);padding:17px 16px}
+nav,main,footer{max-width:760px;margin:auto}
+.brand{font-size:21px;font-weight:800;color:var(--blue)}
+main{padding:26px 16px 45px}
+h1{font-size:clamp(28px,7vw,40px);line-height:1.15;letter-spacing:-1px;margin:8px 0 12px}
+p{color:var(--muted)}
+.intro{text-align:center;margin-bottom:24px}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 30px #1e40af0a}
+.drop{display:block;text-align:center;padding:26px 12px;border:2px dashed #93b4fa;border-radius:14px;background:#f8fbff;cursor:pointer}
+.drop strong{display:block;font-size:18px;color:var(--blue)}
+input,button,select{font:inherit}
+input[type=file]{display:none}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+button{cursor:pointer;border:0;border-radius:10px;padding:12px 14px;font-weight:700}
+.preset{background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe}
+.preset.active{background:var(--blue);color:white}
+label.field{display:block;font-size:14px;font-weight:700;margin:16px 0 7px}
+input[type=number],select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:white;color:var(--ink)}
+.primary{background:var(--blue);color:white;width:100%;margin-top:18px}
+.primary:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:#eaf0ff;color:#1d4ed8;width:100%;margin-top:10px}
+#preview{display:none;max-width:100%;max-height:280px;object-fit:contain;margin:18px auto 8px;border-radius:10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+.stat{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:10px;overflow-wrap:anywhere}
+.stat small{display:block;color:var(--muted)}
+#status{font-size:14px;margin-top:12px;overflow-wrap:anywhere}
+.info{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px}
+h2{font-size:21px;margin:0 0 8px}
+footer{padding:20px 16px 35px;text-align:center;font-size:13px}
+footer a{color:var(--blue)}
+@media(min-width:600px){.panel{padding:28px}.presets{grid-template-columns:repeat(5,1fr)}}
+</style>
+</head>
+<body>
+<header><nav><div class="brand">QuickKB</div></nav></header>
+<main>
+<section class="intro">
+<p>FREE ONLINE IMAGE TOOL</p>
+<h1>Resize Image to Exact KB</h1>
+<p>Compress your image for online forms, applications and documents. No account required. Your image stays on your device.</p>
+</section>
+
+<section class="panel">
+<label class="drop" for="file">
+<strong>Choose an image</strong>
+Tap here to upload JPG, PNG or WebP
+<p style="margin-bottom:0;font-size:13px">You can also use your phone's photo library.</p>
+</label>
+<input id="file" type="file" accept="image/jpeg,image/png,image/webp">
+<img id="preview" alt="Preview of selected image">
+<div class="stats">
+<div class="stat"><small>Original file size</small><strong id="original">Not selected</strong></div>
+<div class="stat"><small>Image dimensions</small><strong id="dimensions">—</strong></div>
+</div>
+
+<label class="field">Choose target file size</label>
+<div class="presets">
+<button class="preset" data-kb="20">20 KB</button>
+<button class="preset" data-kb="50">50 KB</button>
+<button class="preset active" data-kb="100">100 KB</button>
+<button class="preset" data-kb="200">200 KB</button>
+<button class="preset" data-kb="500">500 KB</button>
+</div>
+<label class="field" for="custom">Or enter a custom target (KB)</label>
+<input id="custom" type="number" min="1" max="20000" value="100" inputmode="numeric">
+<label class="field" for="format">Output format</label>
+<select id="format">
+<option value="image/jpeg">JPG — smaller files</option>
+<option value="image/webp">WebP — modern format</option>
+<option value="image/png">PNG — lossless where possible</option>
+</select>
+<button id="resize" class="primary" disabled>Compress Image</button>
+<button id="download" class="secondary" hidden>Download Resized Image</button>
+<p id="status" role="status">Choose an image to begin.</p>
+</section>
+
+<section class="info">
+<h2>How to resize an image to a specific KB</h2>
+<p>1. Select a photo from your device.</p>
+<p>2. Choose a target such as 50 KB, 100 KB or 200 KB.</p>
+<p>3. Tap Compress Image and download the result.</p>
+<p>Compression depends on the image and format. Very small targets may require lower quality or smaller dimensions.</p>
+</section>
+<section class="info">
+<h2>Private and free</h2>
+<p>Images are processed locally in your browser. This page does not send your selected image to a server. No registration or payment is required.</p>
+</section>
+</main>
+<footer>© <span id="year"></span> QuickKB Image Resizer · Free browser-based tool</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let file=null,bitmap=null,resultBlob=null,resultURL=null;
+$("year").textContent=new Date().getFullYear();
+
+function kb(n){return (n/1024).toFixed(1)+" KB"}
+function clearResult(){
+ resultBlob=null;
+ $("download").hidden=true;
+ if(resultURL){URL.revokeObjectURL(resultURL);resultURL=null}
+}
+$("file").addEventListener("change",async e=>{
+ file=e.target.files[0];bitmap=null;clearResult();
+ if(!file)return;
+ if(!file.type.startsWith("image/")){$("status").textContent="Please choose a valid image.";return}
+ if(file.size>20*1024*1024){$("status").textContent="Please choose an image smaller than 20 MB.";return}
+ try{
+  bitmap=await createImageBitmap(file);
+  $("preview").src=URL.createObjectURL(file);
+  $("preview").style.display="block";
+  $("original").textContent=kb(file.size);
+  $("dimensions").textContent=bitmap.width+" × "+bitmap.height;
+  $("resize").disabled=false;
+  $("status").textContent="Image ready. Select a target size and compress.";
+ }catch(err){
+  $("status").textContent="This image could not be opened. Try another image.";
+ }
+});
+document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll(".preset").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");$("custom").value=b.dataset.kb;
+}));
+$("custom").addEventListener("input",()=>{
+ document.querySelectorAll(".preset").forEach(x=>x.classList.toggle("active",x.dataset.kb===$("custom").value));
+});
+function canvasBlob(canvas,type,quality){
+ return new Promise(resolve=>canvas.toBlob(resolve,type,quality));
+}
+$("resize").addEventListener("click",async()=>{
+ if(!bitmap)return;
+ const targetKB=Number($("custom").value);
+ if(!Number.isFinite(targetKB)||targetKB<1||targetKB>20000){
+  $("status").textContent="Enter a target between 1 and 20,000 KB.";return;
+ }
+ clearResult();
+ $("resize").disabled=true;
+ $("status").textContent="Compressing image…";
+ await new Promise(r=>setTimeout(r,20));
+ try{
+  const target=targetKB*1024,type=$("format").value;
+  let scale=1,best=null,bestDiff=Infinity;
+  for(let dimensionTry=0;dimensionTry<12;dimensionTry++){
+   const canvas=document.createElement("canvas");
+   canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+   canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+   const ctx=canvas.getContext("2d");
+   if(type==="image/jpeg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height)}
+   ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+   const qualities=type==="image/png"?[undefined]:[0.92,0.82,0.72,0.62,0.5,0.38,0.25,0.15];
+   let foundSmaller=false;
+   for(const q of qualities){
+    const blob=await canvasBlob(canvas,type,q);
+    if(!blob)continue;
+    const diff=Math.abs(blob.size-target);
+    if(diff<bestDiff){best=blob;bestDiff=diff}
+    if(blob.size<=target){
+     foundSmaller=true;
+     if(!best||best.size>target||target-blob.size<target-best.size)best=blob;
+     if(blob.size>=target*0.90)break;
+    }
+   }
+   if(best&&best.size<=target&&best.size>=target*0.90)break;
+   if(foundSmaller&&best&&best.size<=target)break;
+   scale*=0.82;
+   if(canvas.width<=64||canvas.height<=64)break;
+  }
+  if(!best)throw new Error("Could not create image");
+  resultBlob=best;resultURL=URL.createObjectURL(best);
+  $("download").hidden=false;
+  $("status").textContent="Result: "+kb(best.size)+" · "+(best.size<=target?"At or below your target.":"Target could not be reached; this is the closest result found.")+" Dimensions: "+Math.max(1,Math.round(bitmap.width*scale))+" × "+Math.max(1,Math.round(bitmap.height*scale))+".";
+ }catch(err){
+  $("status").textContent="Compression failed. Try another image or format.";
+ }finally{$("resize").disabled=false}
+});
+$("download").addEventListener("click",()=>{
+ if(!resultBlob)return;
+ const ext=$("format").value==="image/jpeg"?"jpg":$("format").value==="image/png"?"png":"webp";
+ const a=document.createElement("a");
+ a.href=resultURL;a.download="quickkb-resized."+ext;
+ document.body.appendChild(a);a.click();a.remove();
+});
+</script>
+</body>
+</html>
